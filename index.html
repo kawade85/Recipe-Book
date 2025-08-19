@@ -1,0 +1,839 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Recipe Book</title>
+
+    <!--===CSS===-->
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Arial', sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            color: #333;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 20px;
+        }
+
+        header {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        h1 {
+            color: white;
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.3);
+        }
+
+        .subtitle {
+            color: #f0f0f0;
+            font-size: 1.1rem;
+        }
+
+        .nav-buttons {
+            display: flex;
+            justify-content: center;
+            gap: 15px;
+            margin: 20px 0;
+            flex-wrap: wrap;
+        }
+
+        .nav-btn {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 25px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .nav-btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(0,0,0,0.3);
+        }
+
+        .nav-btn.active {
+            background: linear-gradient(45deg, #4ECDC4, #44A08D);
+        }
+
+        .section {
+            display: none;
+            background: white;
+            border-radius: 15px;
+            padding: 30px;
+            margin: 20px 0;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.1);
+        }
+
+        .section.active {
+            display: block;
+            animation: fadeIn 0.5s ease-in;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; transform: translateY(20px); }
+            to { opacity: 1; transform: translateY(0); }
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        input, textarea, select {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 1rem;
+            transition: border-color 0.3s ease;
+        }
+
+        input:focus, textarea:focus {
+            outline: none;
+            border-color: #667eea;
+            box-shadow: 0 0 10px rgba(102, 126, 234, 0.2);
+        }
+
+        textarea {
+            resize: vertical;
+            min-height: 120px;
+        }
+
+        .ingredient-input {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 10px;
+        }
+
+        .ingredient-input input {
+            flex: 1;
+        }
+
+        .btn {
+            background: linear-gradient(45deg, #667eea, #764ba2);
+            color: white;
+            border: none;
+            padding: 12px 24px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: bold;
+            transition: all 0.3s ease;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 15px rgba(0,0,0,0.2);
+        }
+
+        .btn-secondary {
+            background: linear-gradient(45deg, #FF6B6B, #FF8E8E);
+        }
+
+        .btn-small {
+            padding: 8px 16px;
+            font-size: 0.9rem;
+        }
+
+        .search-container {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .search-container input {
+            flex: 1;
+        }
+
+        .recipes-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 20px;
+            margin-top: 20px;
+        }
+
+        .recipe-card {
+            background: white;
+            border-radius: 12px;
+            overflow: hidden;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .recipe-card:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 10px 25px rgba(0,0,0,0.15);
+        }
+
+        .recipe-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background: linear-gradient(45deg, #f0f0f0, #e0e0e0);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #999;
+            font-size: 1.2rem;
+        }
+
+        .recipe-content {
+            padding: 20px;
+        }
+
+        .recipe-title {
+            font-size: 1.3rem;
+            font-weight: bold;
+            margin-bottom: 10px;
+            color: #333;
+        }
+
+        .recipe-preview {
+            color: #666;
+            font-size: 0.9rem;
+            line-height: 1.4;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1000;
+            overflow-y: auto;
+        }
+
+        .modal-content {
+            background: white;
+            margin: 50px auto;
+            padding: 30px;
+            border-radius: 15px;
+            max-width: 800px;
+            width: 90%;
+            position: relative;
+        }
+
+        .close {
+            position: absolute;
+            top: 15px;
+            right: 20px;
+            font-size: 24px;
+            font-weight: bold;
+            cursor: pointer;
+            color: #999;
+        }
+
+        .close:hover {
+            color: #333;
+        }
+
+        .modal-image {
+            width: 100%;
+            max-height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            margin-bottom: 20px;
+        }
+
+        .ingredients-list {
+            background: #f8f9fa;
+            padding: 20px;
+            border-radius: 10px;
+            margin: 20px 0;
+        }
+
+        .ingredients-list h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .ingredients-list ul {
+            list-style-type: none;
+            padding: 0;
+        }
+
+        .ingredients-list li {
+            padding: 8px 0;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .ingredients-list li:last-child {
+            border-bottom: none;
+        }
+
+        .steps-section {
+            margin-top: 20px;
+        }
+
+        .steps-section h3 {
+            color: #333;
+            margin-bottom: 15px;
+        }
+
+        .steps-section p {
+            line-height: 1.6;
+            color: #555;
+        }
+
+        .error-message {
+            background: #ffebee;
+            color: #c62828;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #c62828;
+        }
+
+        .success-message {
+            background: #e8f5e8;
+            color: #2e7d32;
+            padding: 10px;
+            border-radius: 5px;
+            margin-bottom: 15px;
+            border-left: 4px solid #2e7d32;
+        }
+
+        .empty-state {
+            text-align: center;
+            padding: 40px;
+            color: #666;
+        }
+
+        .empty-state h3 {
+            margin-bottom: 10px;
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 10px;
+            }
+
+            h1 {
+                font-size: 2rem;
+            }
+
+            .nav-buttons {
+                flex-direction: column;
+                align-items: center;
+            }
+
+            .nav-btn {
+                width: 200px;
+            }
+
+            .search-container {
+                flex-direction: column;
+            }
+
+            .recipes-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .modal-content {
+                margin: 20px auto;
+                width: 95%;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>🍳 Recipe Book</h1>
+            <p class="subtitle">Discover, Create, and Share Amazing Recipes</p>
+        </header>
+
+        <nav class="nav-buttons">
+            <button class="nav-btn active" onclick="showSection('view-recipes')">📖 View Recipes</button>
+            <button class="nav-btn" onclick="showSection('add-recipe')">➕ Add Recipe</button>
+            <button class="nav-btn" onclick="showSection('search-recipes')">🔍 Search Recipes</button>
+        </nav>
+
+        <!-- View Recipes Section -->
+        <section id="view-recipes" class="section active">
+            <h2>📚 All Recipes</h2>
+            <div id="recipes-container">
+                <div class="empty-state">
+                    <h3>No recipes yet!</h3>
+                    <p>Start by adding your first recipe.</p>
+                </div>
+            </div>
+        </section>
+
+        <!-- Add Recipe Section -->
+        <section id="add-recipe" class="section">
+            <h2>➕ Add New Recipe</h2>
+            <form id="recipe-form">
+                <div id="message-container"></div>
+                
+                <div class="form-group">
+                    <label for="recipe-name">Recipe Name *</label>
+                    <input type="text" id="recipe-name" required placeholder="Enter recipe name">
+                </div>
+
+                <div class="form-group">
+                    <label for="recipe-image">Recipe Image</label>
+                    <input type="file" id="recipe-image" accept="image/*">
+                </div>
+
+                <div class="form-group">
+                    <label>Ingredients *</label>
+                    <div id="ingredients-container">
+                        <div class="ingredient-input">
+                            <input type="text" placeholder="Enter ingredient" required>
+                            <button type="button" class="btn btn-secondary btn-small" onclick="removeIngredient(this)">Remove</button>
+                        </div>
+                    </div>
+                    <button type="button" class="btn btn-small" onclick="addIngredient()">Add Ingredient</button>
+                </div>
+
+                <div class="form-group">
+                    <label for="recipe-steps">Preparation Steps *</label>
+                    <textarea id="recipe-steps" required placeholder="Enter detailed preparation steps..."></textarea>
+                </div>
+
+                <button type="submit" class="btn">🍳 Add Recipe</button>
+            </form>
+        </section>
+
+        <!-- Search Recipes Section -->
+        <section id="search-recipes" class="section">
+            <h2>🔍 Search Recipes</h2>
+            <div class="search-container">
+                <input type="text" id="search-input" placeholder="Search by recipe name or ingredients...">
+                <button class="btn" onclick="searchRecipes()">Search</button>
+            </div>
+            <div id="search-results">
+                <div class="empty-state">
+                    <h3>Enter a search term</h3>
+                    <p>Search for recipes by name or ingredients.</p>
+                </div>
+            </div>
+        </section>
+    </div>
+
+    <!-- Recipe Detail Modal -->
+    <div id="recipe-modal" class="modal">
+        <div class="modal-content">
+            <span class="close" onclick="closeModal()">&times;</span>
+            <div id="recipe-detail"></div>
+        </div>
+    </div>
+  
+
+    <!--JavaScript-->
+    <script>
+        let recipes = [];
+
+        // Load recipes from local storage on page load
+        window.addEventListener('load', function() {
+            loadRecipes();
+            displayRecipes();
+        });
+
+        // Show different sections
+        function showSection(sectionId) {
+            // Hide all sections
+            const sections = document.querySelectorAll('.section');
+            sections.forEach(section => section.classList.remove('active'));
+            
+            // Remove active class from all nav buttons
+            const navButtons = document.querySelectorAll('.nav-btn');
+            navButtons.forEach(btn => btn.classList.remove('active'));
+            
+            // Show selected section
+            document.getElementById(sectionId).classList.add('active');
+            
+            // Add active class to clicked button
+            event.target.classList.add('active');
+            
+            // Refresh recipes display when viewing recipes
+            if (sectionId === 'view-recipes') {
+                displayRecipes();
+            }
+        }
+
+        // Add ingredient input field
+        function addIngredient() {
+            const container = document.getElementById('ingredients-container');
+            const ingredientDiv = document.createElement('div');
+            ingredientDiv.className = 'ingredient-input';
+            ingredientDiv.innerHTML = `
+                <input type="text" placeholder="Enter ingredient" required>
+                <button type="button" class="btn btn-secondary btn-small" onclick="removeIngredient(this)">Remove</button>
+            `;
+            container.appendChild(ingredientDiv);
+        }
+
+        // Remove ingredient input field
+        function removeIngredient(button) {
+            const container = document.getElementById('ingredients-container');
+            if (container.children.length > 1) {
+                button.parentElement.remove();
+            } else {
+                showMessage('At least one ingredient is required!', 'error');
+            }
+        }
+
+        // Handle form submission
+        document.getElementById('recipe-form').addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const name = document.getElementById('recipe-name').value.trim();
+            const steps = document.getElementById('recipe-steps').value.trim();
+            const imageFile = document.getElementById('recipe-image').files[0];
+            
+            // Get ingredients
+            const ingredientInputs = document.querySelectorAll('#ingredients-container input');
+            const ingredients = [];
+            
+            ingredientInputs.forEach(input => {
+                if (input.value.trim()) {
+                    ingredients.push(input.value.trim());
+                }
+            });
+
+            // Validation
+            if (!name) {
+                showMessage('Recipe name is required!', 'error');
+                return;
+            }
+            
+            if (ingredients.length === 0) {
+                showMessage('At least one ingredient is required!', 'error');
+                return;
+            }
+            
+            if (!steps) {
+                showMessage('Preparation steps are required!', 'error');
+                return;
+            }
+
+            // Handle image
+            if (imageFile) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    const recipe = {
+                        id: Date.now(),
+                        name: name,
+                        ingredients: ingredients,
+                        steps: steps,
+                        image: e.target.result,
+                        dateAdded: new Date().toLocaleDateString()
+                    };
+                    
+                    saveRecipe(recipe);
+                };
+                reader.readAsDataURL(imageFile);
+            } else {
+                const recipe = {
+                    id: Date.now(),
+                    name: name,
+                    ingredients: ingredients,
+                    steps: steps,
+                    image: null,
+                    dateAdded: new Date().toLocaleDateString()
+                };
+                
+                saveRecipe(recipe);
+            }
+        });
+
+        // Save recipe
+        function saveRecipe(recipe) {
+            recipes.push(recipe);
+            saveRecipes();
+            showMessage('Recipe added successfully! 🎉', 'success');
+            resetForm();
+            displayRecipes();
+        }
+
+        // Reset form
+        function resetForm() {
+            document.getElementById('recipe-form').reset();
+            const container = document.getElementById('ingredients-container');
+            container.innerHTML = `
+                <div class="ingredient-input">
+                    <input type="text" placeholder="Enter ingredient" required>
+                    <button type="button" class="btn btn-secondary btn-small" onclick="removeIngredient(this)">Remove</button>
+                </div>
+            `;
+        }
+
+        // Show message
+        function showMessage(message, type) {
+            const container = document.getElementById('message-container');
+            container.innerHTML = `<div class="${type}-message">${message}</div>`;
+            
+            setTimeout(() => {
+                container.innerHTML = '';
+            }, 5000);
+        }
+
+        // Display recipes
+        function displayRecipes() {
+            const container = document.getElementById('recipes-container');
+            
+            if (recipes.length === 0) {
+                container.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No recipes yet!</h3>
+                        <p>Start by adding your first recipe.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const recipesHTML = recipes.map(recipe => `
+                <div class="recipe-card" onclick="showRecipeDetail(${recipe.id})">
+                    <div class="recipe-image">
+                        ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" style="width:100%;height:200px;object-fit:cover;">` : '🍽️ No Image'}
+                    </div>
+                    <div class="recipe-content">
+                        <div class="recipe-title">${recipe.name}</div>
+                        <div class="recipe-preview">
+                            <strong>Ingredients:</strong> ${recipe.ingredients.slice(0, 3).join(', ')}${recipe.ingredients.length > 3 ? '...' : ''}<br>
+                            <strong>Added:</strong> ${recipe.dateAdded}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            container.innerHTML = `<div class="recipes-grid">${recipesHTML}</div>`;
+        }
+
+        // Show recipe detail in modal
+        function showRecipeDetail(recipeId) {
+            const recipe = recipes.find(r => r.id === recipeId);
+            if (!recipe) return;
+
+            const modalContent = `
+                <h2>${recipe.name}</h2>
+                ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" class="modal-image">` : ''}
+                
+                <div class="ingredients-list">
+                    <h3>🥘 Ingredients</h3>
+                    <ul>
+                        ${recipe.ingredients.map(ingredient => `<li>• ${ingredient}</li>`).join('')}
+                    </ul>
+                </div>
+                
+                <div class="steps-section">
+                    <h3>👨‍🍳 Preparation Steps</h3>
+                    <p>${recipe.steps.replace(/\n/g, '<br>')}</p>
+                </div>
+                
+                <p><strong>Added on:</strong> ${recipe.dateAdded}</p>
+            `;
+
+            document.getElementById('recipe-detail').innerHTML = modalContent;
+            document.getElementById('recipe-modal').style.display = 'block';
+        }
+
+        // Close modal
+        function closeModal() {
+            document.getElementById('recipe-modal').style.display = 'none';
+        }
+
+        // Close modal when clicking outside
+        window.onclick = function(event) {
+            const modal = document.getElementById('recipe-modal');
+            if (event.target === modal) {
+                modal.style.display = 'none';
+            }
+        }
+
+        // Search recipes
+        function searchRecipes() {
+            const query = document.getElementById('search-input').value.toLowerCase().trim();
+            const resultsContainer = document.getElementById('search-results');
+            
+            if (!query) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>Enter a search term</h3>
+                        <p>Search for recipes by name or ingredients.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const filteredRecipes = recipes.filter(recipe => {
+                const nameMatch = recipe.name.toLowerCase().includes(query);
+                const ingredientMatch = recipe.ingredients.some(ingredient => 
+                    ingredient.toLowerCase().includes(query)
+                );
+                return nameMatch || ingredientMatch;
+            });
+
+            if (filteredRecipes.length === 0) {
+                resultsContainer.innerHTML = `
+                    <div class="empty-state">
+                        <h3>No recipes found</h3>
+                        <p>Try searching with different keywords.</p>
+                    </div>
+                `;
+                return;
+            }
+
+            const resultsHTML = filteredRecipes.map(recipe => `
+                <div class="recipe-card" onclick="showRecipeDetail(${recipe.id})">
+                    <div class="recipe-image">
+                        ${recipe.image ? `<img src="${recipe.image}" alt="${recipe.name}" style="width:100%;height:200px;object-fit:cover;">` : '🍽️ No Image'}
+                    </div>
+                    <div class="recipe-content">
+                        <div class="recipe-title">${recipe.name}</div>
+                        <div class="recipe-preview">
+                            <strong>Ingredients:</strong> ${recipe.ingredients.slice(0, 3).join(', ')}${recipe.ingredients.length > 3 ? '...' : ''}<br>
+                            <strong>Added:</strong> ${recipe.dateAdded}
+                        </div>
+                    </div>
+                </div>
+            `).join('');
+
+            resultsContainer.innerHTML = `
+                <h3>Search Results (${filteredRecipes.length} found)</h3>
+                <div class="recipes-grid">${resultsHTML}</div>
+            `;
+        }
+
+        // Enable search on Enter key
+        document.getElementById('search-input').addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                searchRecipes();
+            }
+        });
+
+        // Save recipes to localStorage
+        function saveRecipes() {
+            const recipesData = JSON.stringify(recipes);
+            try {
+                // Using a memory-based storage simulation for demo
+                window.recipeStorage = recipesData;
+            } catch (error) {
+                console.error('Error saving recipes:', error);
+                showMessage('Error saving recipe. Please try again.', 'error');
+            }
+        }
+
+        // Load recipes from localStorage
+        function loadRecipes() {
+            try {
+                // Using memory-based storage simulation for demo
+                const savedRecipes = window.recipeStorage;
+                if (savedRecipes) {
+                    recipes = JSON.parse(savedRecipes);
+                }
+            } catch (error) {
+                console.error('Error loading recipes:', error);
+                recipes = [];
+            }
+        }
+
+        // Initialize with sample data for demonstration
+        if (recipes.length === 0) {
+            recipes = [
+                {
+                    id: 1,
+                    name: "Classic Chocolate Chip Cookies",
+                    ingredients: ["2 cups all-purpose flour", "1 cup butter", "3/4 cup brown sugar", "1/2 cup white sugar", "2 eggs", "2 tsp vanilla extract", "1 tsp baking soda", "1 tsp salt", "2 cups chocolate chips"],
+                    steps: "1. Preheat oven to 375°F (190°C).\n2. In a large bowl, cream together butter and sugars until light and fluffy.\n3. Beat in eggs one at a time, then add vanilla.\n4. In a separate bowl, whisk together flour, baking soda, and salt.\n5. Gradually mix flour mixture into butter mixture.\n6. Stir in chocolate chips.\n7. Drop rounded tablespoons of dough onto ungreased baking sheets.\n8. Bake for 9-11 minutes or until golden brown.\n9. Cool on baking sheet for 2 minutes before transferring to wire rack.",
+                    image: "Images/Chocochip_Cookies.jpg",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+                {
+                    id: 2,
+                    name: "Creamy Mushroom Risotto",
+                    ingredients: ["1 cup Arborio rice", "4 cups warm chicken broth", "1 cup mixed mushrooms", "1/2 cup white wine", "1 onion diced", "3 cloves garlic", "1/2 cup Parmesan cheese", "2 tbsp olive oil", "2 tbsp butter", "Salt and pepper to taste"],
+                    steps: "1. Heat olive oil in a large pan over medium heat.\n2. Sauté onion and garlic until fragrant.\n3. Add mushrooms and cook until tender.\n4. Add rice and stir for 2 minutes until lightly toasted.\n5. Pour in wine and stir until absorbed.\n6. Add warm broth one ladle at a time, stirring constantly.\n7. Continue until rice is creamy and tender (about 18-20 minutes).\n8. Stir in butter and Parmesan cheese.\n9. Season with salt and pepper.\n10. Serve immediately while hot.",
+                    image: "Images/mushroom_cream.png",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+                {
+                    id: 3,
+                    name: "Chicken Curry",
+                    ingredients: ["2 lbs chicken pieces", "salt", "turmeric", "lemon juice", "4 cups warm chicken broth","2 onions", "4 garlic cloves", "1-inch ginger", "2-3 green chilies", "2 tomatoes","3 tbsp oil", "1 cup coconut milk", "1 cup water", "cilantro"],
+                    steps: "1.Marinate chicken with salt, turmeric, lemon juice (15 mins).\n2.Heat oil in pan, fry chicken until golden, set aside.\n3.Sauté onions until golden, add ginger-garlic-chilies\n4.Add spices (coriander, cumin, turmeric, chili powder), cook 1 min\n5.Add tomatoes, cook until soft and mushy\n6.Return chicken to pan, add coconut milk and water\n7.Simmer 20-25 minutes until chicken is tender\n8.Add garam masala, garnish with cilantro. Done! 🔥 Serve with rice or naan.",
+                    image: "Images/Chicken.jpg",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+
+                {
+                    id: 4,
+                    name: "Hot Chocolate",
+                    ingredients: ["2 cups milk", "2-3 tablespoons cocoa powder (or 2 oz dark chocolate, chopped)", "2-3 tablespoons sugar (adjust to taste)", "1/4 teaspoon vanilla extract", "Pinch of salt"],
+                    steps: "1.Heat milk in a saucepan over medium heat until steaming (don't boil)\n2.Whisk in cocoa powder, sugar, and salt until smooth\n3.Remove from heat and stir in vanilla\n4.Pour into mugs and serve hot",
+                    image: "Images/hot_chocolate.jpg",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+
+                {
+                    id: 5,
+                    name: "Creamy Garlic Parmesan Pasta",
+                    ingredients: ["1 lb (450g) pasta (penne or fettuccine)","4 cloves garlic", "minced1/2 cup butter","1 cup heavy cream","1 cup grated Parmesan cheese","1/2 cup chicken broth","2 tbsp olive oil","1/4 cup fresh parsley", "choppedSalt and black pepper to taste","Optional: grilled chicken or shrimp"],
+                    steps: "1.Cook pasta according to package directions until al dente.\n2. Reserve 1 cup pasta water before draining.\n 3.In a large skillet, heat olive oil and butter over medium heat.\n4.Add minced garlic and sauté for 1-2 minutes until fragrant.\n5.Pour in heavy cream and chicken broth, bring to a gentle simmer.\n6.Add Parmesan cheese gradually, whisking constantly until melted and smooth.\n 7.Add the cooked pasta to the sauce and toss to combine.\n8.If sauce is too thick, add reserved pasta water gradually.\n9.Season with salt and pepper, garnish with fresh parsley.\n10.Serve immediately while hot.",
+                    image: "Images/vegan-version-traditional-italian-pasta.webp",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+
+                {
+                    id: 6.,
+                    name: "Korean Bibimbap",
+                    ingredients: ["2 cups cooked white rice", "200g beef bulgogi strips", "1 cup spinach", "1 cup bean sprouts", "1 carrot, julienned", "1 zucchini, julienned", "4 shiitake mushrooms, sliced", "4 eggs", "3 tbsp sesame oil", "2 tbsp soy sauce", "1 tbsp rice vinegar", "2 cloves garlic, minced", "1 tsp sesame seeds", "Gochujang (Korean chili paste)", "Vegetable oil for cooking"],
+                    steps: "1. Cook each vegetable separately: blanch spinach and bean sprouts, sauté carrot, zucchini, and mushrooms with garlic.\n2. Season each vegetable with sesame oil, soy sauce, and sesame seeds.\n3. Cook beef bulgogi until caramelized.\n4. Fry eggs sunny-side up.\n5. Place warm rice in bowls, arrange vegetables and beef in sections on top.\n6. Top each bowl with a fried egg.\n7. Serve with gochujang on the side for mixing.",
+                    image: "Images/bibimbap-korean.webp",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+
+                {
+                    id: 7,
+                    name: "Chicken and Apricot Tagine",
+                    ingredients: ["2 lbs chicken thighs", "1 large onion, sliced", "3 cloves garlic, minced", "1-inch ginger, grated", "1 tsp cinnamon", "1 tsp ground ginger", "1 tsp turmeric", "1/2 tsp saffron", "1 cup dried apricots", "1/2 cup almonds", "2 cups chicken broth", "2 tbsp honey", "2 tbsp olive oil", "Salt and pepper", "Fresh cilantro", "Couscous for serving"],
+                    steps: "1. Heat olive oil in a tagine or heavy pot over medium heat.\n2. Season chicken with salt and pepper, brown on all sides.\n3. Remove chicken, sauté onions until golden.\n4. Add garlic, ginger, cinnamon, ground ginger, turmeric, and saffron.\n5. Return chicken to pot, add broth, apricots, and honey.\n6. Cover and simmer for 45 minutes until chicken is tender.\n7. Add almonds in the last 10 minutes of cooking.\n8. Garnish with cilantro and serve over couscous.",
+                    image: "Images/aromatic-moroccan-chicken-tagine.webp",
+                    dateAdded: new Date().toLocaleDateString()
+                },
+
+                {
+                   id: 8,
+                   name: "Authentic Pad Thai",
+                   ingredients: ["8 oz rice noodles", "3 tbsp tamarind paste", "3 tbsp fish sauce", "2 tbsp palm sugar", "2 tbsp vegetable oil", "3 cloves garlic, minced", "2 eggs", "200g shrimp or chicken", "1 cup bean sprouts", "3 green onions, chopped", "1/4 cup crushed peanuts", "Lime wedges", "Fresh cilantro", "1 tsp dried chili flakes"],
+                   steps: "1. Soak rice noodles in warm water until soft, then drain.\n2. Mix tamarind paste, fish sauce, and palm sugar to make the sauce.\n3. Heat oil in a wok over high heat. Add garlic and stir-fry for 30 seconds.\n4. Add shrimp/chicken and cook until done.\n5. Push ingredients to one side, scramble eggs on the other side.\n6. Add drained noodles and sauce, toss everything together.\n7. Add bean sprouts and green onions, stir-fry for 2 minutes.\n8. Garnish with crushed peanuts, cilantro, chili flakes, and lime wedges.",
+                   image: "Images/Pad-Thai-square-FS-29.webp",
+                   dateAdded: new Date().toLocaleDateString()
+                }
+
+            ];
+            saveRecipes();
+        }
+    </script>
+</body>
+</html>
